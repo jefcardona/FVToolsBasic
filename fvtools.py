@@ -4,13 +4,17 @@ from cgitb import lookup, text
 from faulthandler import disable
 from lib2to3.pgen2.token import LBRACE
 from msilib.schema import File
+from multiprocessing import connection
 from multiprocessing.sharedctypes import Value
+from multiprocessing.spawn import import_main_path
+from numbers import Real
 from sqlite3.dbapi2 import Cursor, connect
 from struct import pack
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 from tkinter import filedialog
+import tkinter
 from tkinter.ttk import *
 import sqlite3
 from turtle import bgcolor, onclick, width
@@ -302,6 +306,7 @@ class FVTools():
 
         #Nombre del proyecto
         proyecto_label = Label(self.diseñoPpal, text="Nombre del proyecto:").place(x=10, y=30)
+        self.proy_in = StringVar()
         self.proy_in = Entry(self.diseñoPpal, width="60")
         self.proy_in.pack()
         self.proy_in.place(x=130, y=30)
@@ -342,6 +347,7 @@ class FVTools():
         
         #Latitud
         latitud_label = Label(self.diseñoPpal, text="Latitud").place(x=10, y=150)
+        self.latitud_in = DoubleVar()
         self.latitud_in = Entry(self.diseñoPpal, width="30")
         self.latitud_in.pack()
         self.latitud_in.place(x=120, y=150)
@@ -408,11 +414,22 @@ class FVTools():
         crearProyect_boton.pack
         crearProyect_boton.place(x=200, y=430)
 
-        #Botón selección sistema 
+        #Botones selección de tipo de diseño (ON-GRID; OFF-GRID; Hibrido) 
         menuDiseño_label = Label(self.diseñoPpal, text="Opciones de diseño").place(x=200, y=460)
-        sistemaFV_boton = ttk.Button(self.diseñoPpal, text="Diseño FV", width="30")
-        sistemaFV_boton.pack()
-        sistemaFV_boton.place(x=10, y=490)
+        #Botón diseño ON GRID
+        sisOngrid_boton = ttk.Button(self.diseñoPpal, text="ON GRID", width="20", command=self.val_OnGrid)
+        sisOngrid_boton.pack()
+        sisOngrid_boton.place(x=10, y=490)
+
+        #Botón diseño OFF GRID
+        sisOffgrid_boton = ttk.Button(self.diseñoPpal, text="OFF GRID", width="20", command=self.val_OffGrid)
+        sisOffgrid_boton.pack()
+        sisOffgrid_boton.place(x=190, y=490)
+
+        #Botón diseño Hibrido
+        sisHibrido_boton = ttk.Button(self.diseñoPpal, text="Hibrido", width="20", command=self.val_Hibrido)
+        sisHibrido_boton.pack()
+        sisHibrido_boton.place(x=370, y=490)
 
         self.diseñoPpal.mainloop() #Fin de la ventana diseño principal
     
@@ -432,9 +449,14 @@ class FVTools():
     
     def abrir_archivo(self): #Este código permite abrir archivo exportado en el interfaz ven_diseñoPpal
         abrirArchivo =filedialog.askopenfilename(initialdir="/", title="Seleccionar archivo", defaultextension=".txt", filetypes=[("Todos los archivos","*.*")])
-        importProyecto = open(abrirArchivo, 'r', encoding="utf-8")
+        importProyecto = open(abrirArchivo, "r")
         contenidoProy = importProyecto.read()
-        importProyecto.read("a",self.proy_in.set())
+        importProyecto.close()
+        print(contenidoProy)
+        self.proy_in.insert(0, contenidoProy[0])
+        self.consec_in.insert(0, contenidoProy[1])
+        
+        #importProyecto.read(1,self.proy_in.insert())
     
     def exportar_proyecto(self): #Este código permite exportar el archivo del proyecto en la ruta elegida
         if self.validar_campos_diseno():
@@ -443,8 +465,11 @@ class FVTools():
             filetypes=[("txt","*.txt")])
             fechaProy = datetime.now()
             expoProyecto = open(expoArchivo, 'w')
-            expoProyecto.write("\n" + self.proy_in.get())
-            expoProyecto.write("\n" + self.consec_in.get())
+            print(expoProyecto)
+            expoProyecto.write(self.proy_in.get())
+            expoProyecto.write("\t")
+            expoProyecto.write(self.consec_in.get())
+            expoProyecto.write("\t")
             expoProyecto.write("\n" + self.departamento_in.get())
             expoProyecto.write("\n" + self.municipio_in.get())
             expoProyecto.write("\n" + self.latitud_in.get())
@@ -526,6 +551,70 @@ class FVTools():
         else:
             showerror(title="ERROR", message="Debes de llenar todos los campos.") 
 
+    def val_OnGrid(self): #Función solo para ingreso a diseños de proyectos ON GRID.
+        if self.validar_campos_diseno(): #Se valida que todos los cmapos estén diligenciados
+            if self.sistemaFV_in.get() == "ON GRID": #Se valida que corresponda el proyecto con el sistema a diseñar
+                sistemaON = messagebox.askyesno(title="Tipo de sistema a diseñar", message="El sistema a diseñar es un sistema ON GRID, deseas continuar?")
+                if sistemaON == True:
+                    self.ven_disONGRID()
+            else:
+                showerror(title="Error de selección de sistema", message="El tipo de diseño seleccionado no corresponde al sistema FV del proyecto.")
+        else:
+            showerror(title="Error, de diligenciamiento", message="Debe de llenar todos los campos")    
+
+    def val_OffGrid(self): #Función solo para ingreso a diseños de proyectos ON GRID.
+        if self.validar_campos_diseno(): #Se valida que todos los cmapos estén diligenciados
+            if self.sistemaFV_in.get() == "OFF GRID":#Se valida que corresponda el proyecto con el sistema a diseñar
+                sistemaOFF = messagebox.askyesno(title="Tipo de sistema a diseñar", message="El sistema a diseñar es un sistema OFF GRID, deseas continuar?")
+                if sistemaOFF == True:
+                    self.ven_disOFFGRID()
+            else:
+                showerror(title="Error de selección de sistema", message="El tipo de diseño seleccionado no corresponde al sistema FV del proyecto.")
+        else:
+            showerror(title="Error, de diligenciamiento", message="Debe de llenar todos los campos") 
+    
+    def val_Hibrido(self): #Función solo para ingreso a diseños de proyectos ON GRID.
+        if self.validar_campos_diseno(): #Se valida que todos los cmapos estén diligenciados
+            if self.sistemaFV_in.get() == "Hibrido":#Se valida que corresponda el proyecto con el sistema a diseñar
+                sistemaHi = messagebox.askyesno(title="Tipo de sistema a diseñar", message="El sistema a diseñar es un sistema Hibrido, deseas continuar?")
+                if sistemaHi == True:
+                    self.ven_disHibrido()
+            else:
+                showerror(title="Error de selección de sistema", message="El tipo de diseño seleccionado no corresponde al sistema FV del proyecto.")
+        else:
+            showerror(title="Error, de diligenciamiento", message="Debe de llenar todos los campos") 
+
+    #------------------------------------------ Ventana: Diseño ON GRID ----------------------------------
+    def ven_disONGRID(self):
+        self.disOngrid = Tk()
+        self.disOngrid.title("Diseño de proyecto con sistema ON-GRID FVTools")
+        self.disOngrid.geometry("1250x650")
+        self.disOngrid.resizable(width=False, height=False)
+        self.disOngrid.iconbitmap("Icono.ico") #Para relacionar el ícono.
+
+        self.disOngrid.mainloop()
+    
+    #------------------------------------------ Ventana: Diseño OFF GRID ----------------------------------
+    def ven_disOFFGRID(self):
+        self.disOffgrid = Tk()
+        self.disOffgrid.title("Diseño de proyecto con sistema OFF-GRID FVTools")
+        self.disOffgrid.geometry("1250x650")
+        self.disOffgrid.resizable(width=False, height=False)
+        self.disOffgrid.iconbitmap("Icono.ico") #Para relacionar el ícono.
+
+        self.disOffgrid.mainloop()
+
+    #------------------------------------------ Ventana: Diseño Hibrido ----------------------------------
+    def ven_disHibrido(self):
+        self.disHibrido = Tk()
+        self.disHibrido.title("Diseño de proyecto con sistema Híbrido FVTools")
+        self.disHibrido.geometry("1250x650")
+        self.disHibrido.resizable(width=False, height=False)
+        self.disHibrido.iconbitmap("Icono.ico") #Para relacionar el ícono.
+
+        self.disHibrido.mainloop()
+    
+    #-----------------------------------Ventana Base de datos-----------------------------------------
     def ven_baseDatos(self):
         self.baseDatos = Tk()
         self.baseDatos.title("Base de datos FVTools")
@@ -559,6 +648,7 @@ class FVTools():
         obs_boton.place(x=10, y=200)
 
         self.baseDatos.mainloop()
+
     #---------------------- Ventana: BD de los paneles FV ----------------------------------------------------
     def ven_panelesFV(self):
         self.panelFV = Tk()
