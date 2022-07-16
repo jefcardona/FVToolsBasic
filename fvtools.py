@@ -9,19 +9,27 @@ from multiprocessing.sharedctypes import Value
 from multiprocessing.spawn import import_main_path
 from numbers import Real
 from sqlite3.dbapi2 import Cursor, connect
+#from matplotlib import pyplot as plt
+import string
 from struct import pack
+from textwrap import wrap
 from tkinter import *
 from tkinter import ttk
+from tkinter import Tk, Frame, Button
 from tkinter import messagebox
 from tkinter import filedialog
 import tkinter
+from tkinter.tix import COLUMN
 from tkinter.ttk import *
 import sqlite3
 from turtle import bgcolor, onclick, width
 from typing import ItemsView
 from tkinter.messagebox import *
-from tkinter import scrolledtext
+from tkinter import scrolledtext 
+from unittest import TestCase
+from webbrowser import get
 from xml.dom.minidom import ReadOnlySequentialNamedNodeMap
+from numpy import insert
 import pandas as pd
 from tkinter import Menu
 import sys
@@ -31,6 +39,7 @@ from setuptools import Command
 from typing import ItemsView
 import os
 from datetime import datetime
+import threading
 
 class FVTools():
     
@@ -417,7 +426,7 @@ class FVTools():
         #Botones selección de tipo de diseño (ON-GRID; OFF-GRID; Hibrido) 
         menuDiseño_label = Label(self.diseñoPpal, text="Opciones de diseño").place(x=200, y=460)
         #Botón diseño ON GRID
-        sisOngrid_boton = ttk.Button(self.diseñoPpal, text="ON GRID", width="20", command=self.val_OnGrid)
+        sisOngrid_boton = ttk.Button(self.diseñoPpal, text="ON GRID", width="20", command=self.ven_disONGRID) #command=self.val_OnGrid
         sisOngrid_boton.pack()
         sisOngrid_boton.place(x=10, y=490)
 
@@ -588,19 +597,316 @@ class FVTools():
     def ven_disONGRID(self):
         self.disOngrid = Tk()
         self.disOngrid.title("Diseño de proyecto con sistema ON-GRID FVTools")
-        self.disOngrid.geometry("1250x650")
+        self.disOngrid.geometry("1250x800")
         self.disOngrid.resizable(width=False, height=False)
         self.disOngrid.iconbitmap("Icono.ico") #Para relacionar el ícono.
 
+        #Encabezado
+        encaOG_label = Label(self.disOngrid, text="Interfaz para diseño de sistema FV On Grid del proyecto: "+self.consec_in.get()+" "+self.proy_in.get()).place(x=400, y=10)
+
+        #1---->Consumos de energía
+        consumo_label = Label(self.disOngrid, text="1. Consumo mensual del cliente mensual").place(x=10, y=30)
+        eactiva_label = Label(self.disOngrid, text="kWh/mes", foreground="blue").place(x=110,y=60)
+        ereactiva_label = Label(self.disOngrid, text="kVARh/mes", foreground="red").place(x=250, y=60)
+        #Enero
+        ene_label = Label(self.disOngrid, text="Enero").place(x=10, y=90)
+        self.ene_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.ene_in.insert(0, 0)
+        self.ene_in.pack()
+        self.ene_in.place(x=80, y=90)
+
+        self.ener_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.ener_in.insert(0, 0)
+        self.ener_in.pack()
+        self.ener_in.place(x=220, y=90)
+
+        #Febrero
+        feb_label = Label(self.disOngrid, text="Frebrero").place(x=10, y=120)    
+        self.feb_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.feb_in.insert(0, 0)
+        self.feb_in.pack()
+        self.feb_in.place(x=80, y=120)
+
+        self.febr_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.febr_in.insert(0, 0)
+        self.febr_in.pack()
+        self.febr_in.place(x=220, y=120)
+
+        #Marzo
+        mar_label = Label(self.disOngrid, text="Marzo").place(x=10, y=150)
+        self.mar_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.mar_in.insert(0, 0)
+        self.mar_in.pack()
+        self.mar_in.place(x=80, y=150)
+
+        self.marr_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.marr_in.insert(0, 0)
+        self.marr_in.pack()
+        self.marr_in.place(x=220, y=150)
+
+        #Abril
+        abr_label = Label(self.disOngrid, text="Abril").place(x=10, y=180)
+        self.abr_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.abr_in.insert(0, 0)
+        self.abr_in.pack()
+        self.abr_in.place(x=80, y=180)
+
+        self.abrr_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.abrr_in.insert(0, 0)
+        self.abrr_in.pack()
+        self.abrr_in.place(x=220, y=180)
+
+        #Mayo
+        may_label = Label(self.disOngrid, text="Mayo").place(x=10, y=210)
+        self.may_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.may_in.insert(0, 0)
+        self.may_in.pack()
+        self.may_in.place(x=80, y=210)
+
+        self.mayr_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.mayr_in.insert(0, 0)
+        self.mayr_in.pack()
+        self.mayr_in.place(x=220, y=210)
+
+        #Junio
+        jun_label = Label(self.disOngrid, text="Junio").place(x=10, y=240)
+        self.jun_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.jun_in.insert(0, 0)
+        self.jun_in.pack()
+        self.jun_in.place(x=80, y=240)
+
+        self.junr_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.junr_in.insert(0, 0)
+        self.junr_in.pack()
+        self.junr_in.place(x=220, y=240)
+
+        #Julio
+        jul_label = Label(self.disOngrid, text="Julio").place(x=10, y=270)
+        self.jul_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.jul_in.insert(0, 0)
+        self.jul_in.pack()
+        self.jul_in.place(x=80, y=270)
+
+        self.julr_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.julr_in.insert(0, 0)
+        self.julr_in.pack()
+        self.julr_in.place(x=220, y=270)
+
+        #Agosto
+        ago_label = Label(self.disOngrid, text="Agosto").place(x=10, y=300)
+        self.ago_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.ago_in.insert(0, 0)
+        self.ago_in.pack()
+        self.ago_in.place(x=80, y=300)
+
+        self.agor_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.agor_in.insert(0, 0)
+        self.agor_in.pack()
+        self.agor_in.place(x=220, y=300)
+
+        #Septiembre
+        sep_label = Label(self.disOngrid, text="Septiembre").place(x=10, y=330)
+        self.sep_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.sep_in.insert(0, 0)
+        self.sep_in.pack()
+        self.sep_in.place(x=80, y=330)
+
+        self.sepr_in =Entry(self.disOngrid, width="20", justify=CENTER)
+        self.sepr_in.insert(0, 0)
+        self.sepr_in.pack()
+        self.sepr_in.place(x=220, y=330)
+        #Octubre
+        oct_label = Label(self.disOngrid, text="Octubre").place(x=10, y=360)
+        self.oct_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.oct_in.insert(0, 0)
+        self.oct_in.pack()
+        self.oct_in.place(x=80, y=360)
+
+        self.octr_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.octr_in.insert(0, 0)
+        self.octr_in.pack()
+        self.octr_in.place(x=220, y=360)
+
+        #Noviembre
+        nov_label = Label(self.disOngrid, text="Noviembre").place(x=10, y=390)
+        self.nov_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.nov_in.insert(0, 0)
+        self.nov_in.pack()
+        self.nov_in.place(x=80, y=390)
+
+        self.novr_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.novr_in.insert(0, 0)
+        self.novr_in.pack()
+        self.novr_in.place(x=220, y=390)
+
+        #Diciembre
+        dic_label = Label(self.disOngrid, text="Diciembre").place(x=10, y=420)
+        self.dic_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.dic_in.insert(0, 0)
+        self.dic_in.pack()
+        self.dic_in.place(x=80, y=420)
+
+        self.dicr_in = Entry(self.disOngrid, width="20", justify=CENTER)
+        self.dicr_in.insert(0, 0)
+        self.dicr_in.pack()
+        self.dicr_in.place(x=220, y=420)
+
+        #Botón para el cálculo de promedio de energía Activa y Reactiva
+        calPromedio_boton = Button(self.disOngrid, text="Calcular promedio", width="20", command=self.promConsumo)
+        calPromedio_boton.pack()
+        calPromedio_boton.place(x=150, y=450)
+
+
+        #1.1---> Describir el consumo del cliente.
+        desConsumo_label = Label(self.disOngrid, text="1.1. Describa el comportamiento del consumo del cliente:").place(x=10, y=540)
+        descConsumo_scrol = scrolledtext.ScrolledText(self.disOngrid, width="40")
+        descConsumo_scrol.pack()
+        descConsumo_scrol.place(x=10, y=570, height=200)
+
+        #2---> Condiciones eléctricas
+        condiElect_label = Label(self.disOngrid, text="2. Condiciones eléctricas").place(x=400, y=30)
+
+        #Sistema eléctrico
+        sisElectrico_label = Label(self.disOngrid, text="Sistema:").place(x=400, y=60)
+        self.sisElecPoy_in = Combobox(self.disOngrid, width="20")
+        self.sisElecPoy_in["values"] = ["Monofásico (2F+1N)", "Trifásico (3F+1N)"]
+        self.sisElecPoy_in.set("Trifásico (3F+1N)")
+        self.sisElecPoy_in.place(x=500, y=60)
+
+        #Tension nominal del cliente
+        tenNomC = Label(self.disOngrid, text="Tensión nom. [V]:").place(x=400, y=90)
+        self.tenNomC_in = Combobox(self.disOngrid, width="20")
+        self.tenNomC_in["values"] = [208, 220, 440]
+        self.tenNomC_in.set(220)
+        self.tenNomC_in.place(x=500, y=90)
+
+        #Tipo de  carga del cliente 
+        """Se debe ajustar con una base de datos que permita ajustar el combobox"""
+        tipoCarga_label = Label(self.disOngrid, text="Tipo de carga:").place(x=400,y=120)
+        self.tipoCarga_in = Combobox(self.disOngrid, width="20")
+        self.tipoCarga_in["values"] = ["Supermercado", "EDS", "Ofinica", "Ganaderia", "Centro educativo", "Panadería", "Restaurante", "Hotel"]
+        self.tipoCarga_in.set("Supermercado")
+        self.tipoCarga_in.place(x=500, y=120)
+
+        #Seleccionar marca de paneles FV, se toma el dato de bd_panel
+        marcaPanel_label = Label(self.disOngrid, text="Marca de paneles").place(x=400, y=150)
+        self.marcapanel_sel = Combobox(self.disOngrid, width="30", justify=CENTER) #@marcaPanel_sel: text de la tabla bd_ongrid
+        self.marcaPanelSelect()
+        self.marcapanel_sel.pack()
+        self.marcapanel_sel.place(x=500, y=150)
+
+        #Seleccionar la referencia del panel FV seleccionado de self.marcaPanel_sel , de la tabla bd_panel
+        refPanel_label = Label(self.disOngrid, text="Referencia:").place(x=400, y=180)
+        self.refPanel_sel = Combobox(self.disOngrid, width="30", justify=CENTER)
+        self.refPanel_sel.pack()
+        self.refPanel_sel.place(x=500, y=180)
+
+        #Botón inversores
+        self.inversores_boton = Button(self.disOngrid, text="Inversores", width="20", command=self.ven_disinversores)
+        self.inversores_boton.pack()
+        self.inversores_boton.place(x=500, y=400)
+
         self.disOngrid.mainloop()
     
+    def marcaPanelSelect(self):
+        consulta1 = "SELECT * FROM bd_panel ORDER BY id DESC" #Consulta a la base de datos BDPpal para importar la información de la tabla bd_panel
+        db_filas = self.inicio_consulta(consulta1)
+        listaPanel = []
+        listaPanel2 = []
+        contador = 0
+        contador2 = 0
+        for fila in db_filas:
+            listaPanel = listaPanel + [fila[2]]
+            contador = contador+1
+        for n in range(contador):
+            if listaPanel[n] != listaPanel[contador2]:
+                listaPanel2 = listaPanel2+[listaPanel[n]]
+                contador2 = contador2+1
+
+        self.marcapanel_sel["values"] = listaPanel2
+        self.marcapanel_sel.bind("<<ComboboxSelected>>", self.refPanelSelect)
+        return()
+    
+    def refPanelSelect(self, event):
+        #consulta1 = "SELECT * FROM bd_panel ORDER BY id DESC" #Consulta a la base de datos BDPpal para importar la información de la tabla bd_panel
+        #db_filas = self.inicio_consulta(consulta1)
+        #listarefPanel = []
+        panelSel = self.marcapanel_sel.get()
+        print(panelSel)
+        return()
+    
+    def ven_disinversores(self):
+        self.inversoresdim = Tk()
+        self.inversoresdim.geometry("700x500")
+        self.inversoresdim.title("Dimensionamiento inversores FVTools")
+        self.inversoresdim.resizable(width=False, height=False)
+        self.inversoresdim.iconbitmap("Icono.ico") #Para relacionar 
+        #Se incluye panel para pestañas
+        self.inversoresdim_nb = Notebook(self.inversoresdim)
+        self.inversoresdim_nb.pack(fill="both", expand=True)
+        #Creación de las pestañas (inversor 1 hasta inversor 10)
+        inversor1 = ttk.Frame(self.inversoresdim_nb)
+        self.inversoresdim_nb.add(inversor1, text="Inversor 1")
+        inversor2 = ttk.Frame(self.inversoresdim_nb)
+        self.inversoresdim_nb.add(inversor2, text="Inversor 2")
+        inversor3 = ttk.Frame(self.inversoresdim_nb)
+        self.inversoresdim_nb.add(inversor3, text="Inversor 3")
+        inversor4 = ttk.Frame(self.inversoresdim_nb)
+        self.inversoresdim_nb.add(inversor4, text="Inversor 4")
+        inversor5 = ttk.Frame(self.inversoresdim_nb)
+        self.inversoresdim_nb.add(inversor5, text="Inversor 5")
+        inversor6 = ttk.Frame(self.inversoresdim_nb)
+        self.inversoresdim_nb.add(inversor6, text="Inversor 6")
+        inversor7 = ttk.Frame(self.inversoresdim_nb)
+        self.inversoresdim_nb.add(inversor7, text="Inversor 7")
+        inversor8 = ttk.Frame(self.inversoresdim_nb)
+        self.inversoresdim_nb.add(inversor8, text="Inversor 8")
+        inversor9 = ttk.Frame(self.inversoresdim_nb)
+        self.inversoresdim_nb.add(inversor9, text="Inversor 9")
+        inversor10 = ttk.Frame(self.inversoresdim_nb)
+        self.inversoresdim_nb.add(inversor10, text="Inversor 10")
+
+    
+
+    def promConsumo(self):
+        activa =[self.ene_in.get(),self.feb_in.get(),self.mar_in.get(),self.abr_in.get(),self.may_in.get(),self.jun_in.get(),self.jul_in.get(),self.ago_in.get(),
+        self.sep_in.get(),self.oct_in.get(),self.nov_in.get(),self.dic_in.get()]
+        meses = 12
+        sumActiva = 0
+        mesActiva = 0
+        for n in range (meses):
+            numActiva = float(activa[n])
+            sumActiva = sumActiva+numActiva
+            if numActiva > 0:
+                mesActiva = mesActiva + 1
+        if mesActiva == 0:
+            mesActiva=1
+        self.promActiva = sumActiva/mesActiva
+        self.promActiva_texto = Label(self.disOngrid, text="El promedio de energía activa mensual es de {} kWh/mes".format(self.promActiva), foreground="blue").place(x=10, y=480)
+
+        
+        reactiva =[self.ener_in.get(),self.febr_in.get(),self.marr_in.get(),self.abrr_in.get(),self.mayr_in.get(),self.junr_in.get(),self.julr_in.get(),self.agor_in.get(),
+        self.sepr_in.get(),self.octr_in.get(),self.novr_in.get(),self.dicr_in.get()]
+        sumReactiva = 0
+        mesReactiva = 0
+        for n in range(meses):
+            numReactiva = float(reactiva[n])
+            sumReactiva = sumReactiva + numReactiva
+            if numReactiva > 0:
+                mesReactiva = mesReactiva + 1
+        if mesReactiva == 0:
+            mesReactiva=1
+        self.promReactiva = sumReactiva/mesReactiva
+        self.promReactiva = sumReactiva/mesReactiva
+        self.promReactiva_texto = Label(self.disOngrid, text="El promedio de energía reactiva mensual es de {} kVARh/mes".format(self.promReactiva), foreground="red").place(x=10, y=500)
+
     #------------------------------------------ Ventana: Diseño OFF GRID ----------------------------------
     def ven_disOFFGRID(self):
         self.disOffgrid = Tk()
         self.disOffgrid.title("Diseño de proyecto con sistema OFF-GRID FVTools")
         self.disOffgrid.geometry("1250x650")
         self.disOffgrid.resizable(width=False, height=False)
-        self.disOffgrid.iconbitmap("Icono.ico") #Para relacionar el ícono.
+        self.disOffgrid.iconbitmap("Icono.ico") #Para relacionar icono
 
         self.disOffgrid.mainloop()
 
